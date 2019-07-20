@@ -51,7 +51,7 @@ namespace GameOfLife.Cli
                 grid = RunSimulationUntilGeneration(grid, options.RunUtilGeneration.Value);
 
             do{
-                Print(grid, "Press 'q' to quit. Press 'g' to specify the next generation to stop at. All other keys advance the simulation one generation.");
+                Print(grid, "Press 'q' to quit.\r\nPress 'g' to specify the next generation to stop at.\r\nPress 'r' to start a new simulation.\r\nAll other keys advance the simulation one generation.");
                 var key = Console.ReadKey();           
             
                 if(key.KeyChar == 'q')
@@ -63,6 +63,10 @@ namespace GameOfLife.Cli
                     var generation = long.Parse(generationsInput);
                     Console.Clear();
                     grid = RunSimulationUntilGeneration(grid, grid.Generation + generation);
+                }
+                if(key.KeyChar == 'r')
+                {
+                    grid = LifeGrid.SeedRandomGrid(columns, rows);
                 }
             }while(true);
         }
