@@ -1,4 +1,5 @@
 ﻿using System;
+using CommandLine;
 
 namespace GameOfLife.Cli
 {
@@ -6,22 +7,11 @@ namespace GameOfLife.Cli
     {
         static void Main(string[] args)
         {
-            Console.SetWindowSize(80, 50);
-            Console.CursorVisible = false;
-            Console.Clear();
-            LifeGrid grid = LifeGrid.SeedRandomGrid(80,40);
-
-            Print(grid);
-
-            do{
-                grid = grid.NextLifeGridState();
-                var key = Print(grid);
-                if(key.KeyChar == 'q')
-                    return;
-            }while(grid.Generation < 3000);
+            Parser.Default.ParseArguments<CliOptions>(args)
+                .WithParsed<CliOptions>(StartSimulationWithOptions);            
         }
 
-        public static ConsoleKeyInfo Print(LifeGrid lifeGrid)
+        public static void Print(LifeGrid lifeGrid, string message = "")
         {
             for(int row = 0; row < lifeGrid.Rows; row++)
             {
@@ -35,10 +25,58 @@ namespace GameOfLife.Cli
                     Console.Write(write);                    
                 }
             }
+            
             Console.SetCursorPosition(0, lifeGrid.Rows + 2);
+            
             Console.WriteLine("Generation: " + lifeGrid.Generation.ToString());
-            var key = Console.ReadKey();
-            return key;
+            Console.WriteLine(message);
+
+            
+        }
+
+        public static void StartSimulationWithOptions(CliOptions options)
+        {
+            Console.WriteLine($"Loading with options: -g {options.RunUtilGeneration} -c {options.Columns} -r {options.Rows}");
+            Console.ReadLine();
+            var rows = options.Rows??30;
+            var columns = options.Columns??60;
+            Console.SetWindowSize(Math.Max(Console.WindowWidth, columns + 2), Math.Max(Console.WindowHeight, rows + 4));
+            Console.CursorVisible = false;
+            Console.Clear();
+
+            LifeGrid grid = LifeGrid.SeedRandomGrid(columns, rows);
+            Print(grid);
+
+            if(options.RunUtilGeneration.HasValue)
+                grid = RunSimulationUntilGeneration(grid, options.RunUtilGeneration.Value);
+
+            do{
+                Print(grid, "Press 'q' to quit. Press 'g' to specify the next generation to stop at. All other keys advance the simulation one generation.");
+                var key = Console.ReadKey();           
+            
+                if(key.KeyChar == 'q')
+                    return;
+                if(key.KeyChar == 'g')
+                {
+                    Console.Write("\r\nHow many more generations to run for: ");
+                    var generationsInput = Console.ReadLine();
+                    var generation = long.Parse(generationsInput);
+                    Console.Clear();
+                    grid = RunSimulationUntilGeneration(grid, grid.Generation + generation);
+                }
+            }while(true);
+        }
+
+
+        public static LifeGrid RunSimulationUntilGeneration(LifeGrid simulation, long generation)
+        {
+            while(simulation.Generation < generation)
+            {
+
+                simulation = simulation.NextLifeGridState();
+                Print(simulation);
+            }
+            return simulation;
         }
     }
 }
