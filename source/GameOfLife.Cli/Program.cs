@@ -36,8 +36,6 @@ namespace GameOfLife.Cli
 
         public static void StartSimulationWithOptions(CliOptions options)
         {
-            Console.WriteLine($"Loading with options: -g {options.RunUtilGeneration} -c {options.Columns} -r {options.Rows}");
-            Console.ReadLine();
             var rows = options.Rows??30;
             var columns = options.Columns??60;
             Console.SetWindowSize(Math.Max(Console.WindowWidth, columns + 2), Math.Max(Console.WindowHeight, rows + 4));
