@@ -2,4 +2,4 @@
 
 This is my implementation of the famous cellular automata simulation.
 
-![Console Recording](https://github.com/kwdowns/GameOfLife/gameoflife.gif)
+![Console Recording](https://github.com/kwdowns/GameOfLife/blob/master/gameoflife.gif)
