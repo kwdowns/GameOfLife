@@ -86,33 +86,21 @@ namespace GameOfLife
 
         public int GetNumberOfAliveNeighbors(int column, int row)
         {
-            //our life grid will wrap around
-            Func<(int, int), bool> cellStateAtMappedCoordsIsAlive = (cr) =>
-              {
-                  return Grid[cr.Item1, cr.Item2] == CellState.Alive;
-              };
-
-            /*
-            (0,0)(1,0)(2,0)
-            (0,1)(1,1)(2,2)
-            (0,2)(1,2)(2,2)
-            */
-
-            var neighborCellCoords = new (int, int)[]{
-                (column - 1, row - 1), //northwest
-                (column, row - 1), //north
-                (column + 1, row - 1), //northeast
-                (column - 1, row), //west
-                (column + 1, row), //east
-                (column - 1, row + 1), //southwest
-                (column, row + 1), // south
-                (column + 1, row + 1) //southeast
-            };
-
-            return neighborCellCoords
-                .Select(c => MapCoordsToTorus(c, Columns, Rows))
-                .Where(cords => Grid[cords.column, cords.row] == CellState.Alive)
-                .Count();
+            // Cells outside the grid boundary are treated as Dead (dead-border semantics).
+            // This avoids per-call allocations from the previous LINQ + tuple-array approach.
+            int count = 0;
+            for (int dc = -1; dc <= 1; dc++)
+            {
+                for (int dr = -1; dr <= 1; dr++)
+                {
+                    if (dc == 0 && dr == 0) continue;
+                    int nc = column + dc;
+                    int nr = row + dr;
+                    if (nc >= 0 && nc < Columns && nr >= 0 && nr < Rows && Grid[nc, nr] == CellState.Alive)
+                        count++;
+                }
+            }
+            return count;
         }
 
         public static LifeGrid SeedRandomGrid(int columns, int rows)
